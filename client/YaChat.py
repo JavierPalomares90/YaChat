@@ -59,6 +59,8 @@ def get_helo_msg(screen_name, udp_port):
 def populate_chatroom(msg):
     # Trim the "ACPT " form the message
     msg = msg[5:]
+    # Time the newline
+    msg.replace('\n', '')
     # split the string on ":"
     records = msg.split(':')
     for i in range(len(records)):
