@@ -9,6 +9,8 @@ import socket
 import time
 
 BUFFER_SIZE = 2048
+# members in chatroom
+chatters = None
 
 
 # returns a tcp socket at the given host and port
@@ -55,7 +57,18 @@ def get_helo_msg(screen_name, udp_port):
 
 
 def populate_chatroom(msg):
-    print(msg)
+    # Trim the "ACPT " form the message
+    msg = msg[5:]
+    # split the string on ":"
+    records = msg.split(':')
+    for i in range(len(records)):
+        # split the records by whitespace
+        values = records[i].split(' ')
+        name = values[0]
+        ip = values[1]
+        port = values[2]
+
+
 
 def parse_server_response(msg):
     # the server accepted us
@@ -66,7 +79,6 @@ def parse_server_response(msg):
         raise Exception("Client is rejected. Username already exists in chatroom")
     else:
         raise Exception("Error: Wrong format for response")
-
 
 
 # Initialize the connection with the server
