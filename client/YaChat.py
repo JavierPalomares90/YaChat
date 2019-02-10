@@ -6,6 +6,9 @@
 
 import argparse
 import socket
+import time
+
+BUFFER_SIZE = 2048
 
 
 # returns a tcp socket at the given host and port
@@ -36,7 +39,7 @@ def get_udp_socket(host, port):
 
 def get_ip_address():
     # TODO: Fix implemenation
-    return "127.0.0.1"
+    return "127.0.1.1"
 
 
 def get_helo_msg(screen_name, udp_port):
@@ -44,12 +47,26 @@ def get_helo_msg(screen_name, udp_port):
     msg += screen_name
     msg += " "
     ip_address = get_ip_address()
-    msg += " "
     msg += ip_address
     msg += " "
     msg += str(udp_port)
     msg +="\n"
     return msg
+
+
+def populate_chatroom(msg):
+    print(msg)
+
+def parse_server_response(msg):
+    # the server accepted us
+    if(msg.find("ACPT ") != -1):
+        populate_chatroom(msg)
+    # the server rejected us
+    elif(msg.find("RJCT ") != -1):
+        raise Exception("Client is rejected. Username already exists in chatroom")
+    else:
+        raise Exception("Error: Wrong format for response")
+
 
 
 # Initialize the connection with the server
@@ -69,12 +86,18 @@ def init_connection(screen_name, host_name, tcp_port):
 
     if helo_msg:
         try:
-            tcp_socket.send(bytes(helo_msg, "utf8"))
+            tcp_socket.send(helo_msg.encode())
         except Exception as e:
             print(e)
             raise(e)
-    msgFromServer = tcp_socket.recv(2048)
-    print(msgFromServer)
+    # TODO: Getting partial response from the server.
+    # Sleeping to avoid this. Need to figure out how to correct this
+    time.sleep(1)
+    msg_from_server = tcp_socket.recv(BUFFER_SIZE)
+    print(msg_from_server)
+    parse_server_response(msg_from_server)
+    tcp_socket.close()
+
 
 
 # main method
@@ -86,7 +109,8 @@ if __name__ == "__main__":
 
     # parse the arguments
     args = parser.parse_args()
-    screenName = args.screen_name
+    # remove whitespace from screen name
+    screenName = args.screen_name.strip()
     hostName = args.host_name
     tcpPort = args.tcp_port
 
