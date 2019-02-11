@@ -86,6 +86,7 @@ def parse_server_response(msg):
 
 
 # Initialize the connection with the server
+# Init a udp socket to listen for messages
 def init_connection(screen_name, host_name, tcp_port):
     # create a tcp socket to connect to the server
     tcp_socket = get_tcp_socket(host_name, tcp_port)
@@ -114,6 +115,7 @@ def init_connection(screen_name, host_name, tcp_port):
             tcp_socket.close()
     else:
         tcp_socket.close()
+    return udp_socket
 
 
 # send a message to all chatters
@@ -140,6 +142,10 @@ def wait_for_user(screen_name):
     msg = input(screen_name + ":")
     send_to_all("MESG " + screen_name + ":" +msg + "\n")
 
+def parse_chatter_message(data):
+    # TODO: Complete implementation
+    print(data)
+
 
 # main method
 if __name__ == "__main__":
@@ -156,9 +162,20 @@ if __name__ == "__main__":
     tcpPort = args.tcp_port
 
     # Initialize the connection
-    init_connection(screenName,hostName,tcpPort)
-     # spin off a thread to listen for messages the user inputs
+    udpSocket = init_connection(screenName,hostName,tcpPort)
+    # spin off a thread to listen for messages the user inputs
     wait_for_user(screenName)
+    # listen for messages on the udp port
+    while(True):
+        try:
+            data, address = udpSocket.recv(BUFFER_SIZE)
+        except Exception as e:
+            print(e)
+        if data:
+            parse_chatter_message(data)
+
+
+
 
 
 
