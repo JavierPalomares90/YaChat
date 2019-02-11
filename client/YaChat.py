@@ -103,10 +103,14 @@ def init_connection(screen_name, host_name, tcp_port):
     if helo_msg:
         try:
             tcp_socket.send(helo_msg.encode())
-            # TODO: Getting partial response from the server.
-            # Sleeping to avoid this. Need to figure out how to correct this
-            time.sleep(1)
-            msg_from_server = tcp_socket.recv(BUFFER_SIZE)
+            # To fix getting partial response from the server.
+            msgAdd = ' '
+            while msgAdd[-1] != '\n':
+                msg = tcp_socket.recv(BUFFER_SIZE)
+                msg = msg.decode("utf-8")
+                msgAdd += msg
+            msg_from_server = msgAdd.strip()
+            #print("msg_from_server =", msg_from_server)
             parse_server_response(msg_from_server)
         except Exception as e:
             print(e)
