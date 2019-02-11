@@ -7,6 +7,7 @@
 import argparse
 import socket
 import time
+import sys
 
 BUFFER_SIZE = 2048
 # members in chatroom
@@ -63,13 +64,14 @@ def populate_chatroom(msg):
     msg.replace('\n', '')
     # split the string on ":"
     records = msg.split(':')
+    chatters = {}
     for i in range(len(records)):
         # split the records by whitespace
         values = records[i].split(' ')
         name = values[0]
         ip = values[1]
         port = values[2]
-
+        chatters[name] = [ip, port]
 
 
 def parse_server_response(msg):
@@ -97,21 +99,46 @@ def init_connection(screen_name, host_name, tcp_port):
 
     # Get the HELO msg to send to the server
     helo_msg = get_helo_msg(screen_name, udp_socket.getsockname()[1])
-
     if helo_msg:
         try:
             tcp_socket.send(helo_msg.encode())
+            # TODO: Getting partial response from the server.
+            # Sleeping to avoid this. Need to figure out how to correct this
+            time.sleep(1)
+            msg_from_server = tcp_socket.recv(BUFFER_SIZE)
+            parse_server_response(msg_from_server)
         except Exception as e:
             print(e)
             raise(e)
-    # TODO: Getting partial response from the server.
-    # Sleeping to avoid this. Need to figure out how to correct this
-    time.sleep(1)
-    msg_from_server = tcp_socket.recv(BUFFER_SIZE)
-    print(msg_from_server)
-    parse_server_response(msg_from_server)
-    tcp_socket.close()
+        finally:
+            tcp_socket.close()
+    else:
+        tcp_socket.close()
 
+
+# send a message to all chatters
+def send_to_all(msg):
+    # Create a UDP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # encode the data
+    data = msg.encode()
+    try:
+        for name in chatters:
+            ip = chatters[name][0]
+            port = chatters[name][1]
+            server_address = (ip, port)
+            sock.sendto(data,server_address)
+    except Exception as e:
+        print("Unable to send udp messages")
+        print(e)
+    finally:
+        sock.close()
+
+
+# waits for the user to input something
+def wait_for_user(screen_name):
+    msg = input(screen_name + ":")
+    send_to_all("MESG " + screen_name + ":" +msg + "\n")
 
 
 # main method
@@ -130,5 +157,8 @@ if __name__ == "__main__":
 
     # Initialize the connection
     init_connection(screenName,hostName,tcpPort)
+     # spin off a thread to listen for messages the user inputs
+    wait_for_user(screenName)
+
 
 
