@@ -92,6 +92,19 @@ class Chatter:
             if name != self.screen_name:
                 print("{} is in the chatroom".format(name))
 
+    def parse_server_join(self, msg):
+        msg = msg[5:].replace('\n', '')
+        name, ip, port = msg.split(' ')
+        if name == self.screen_name:
+            print("{} accepted to the chatroom".format(name))
+        if name not in self.peers:
+            self.peers[name] = (ip, int(port))
+
+    def parse_server_exit(self, msg):
+        name = msg[5:].replace('\n', '')
+        print("{} has left the chatroom".format(name))
+        self.peers.pop(name, None)
+
     def init_connection(self):
         # create a tcp socket to connect to the server
         tcp_socket = self.tcp_socket
@@ -123,8 +136,9 @@ class Chatter:
             tcp_socket.close()
         return udp_socket
 
-    @staticmethod
-    def parse_income_msg(msg):
+    #@staticmethod
+    def parse__msg(msg):
+        #TODO: Check format of MSG. May need to get chatter's name
         print(msg[5:])
 
     def get_input(self):
