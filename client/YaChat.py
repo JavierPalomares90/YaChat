@@ -9,35 +9,11 @@ import socket
 import time
 import sys
 
+from client.Chatter import Chatter
+
 BUFFER_SIZE = 2048
 # members in chatroom
 chatters = None
-
-
-# returns a tcp socket at the given host and port
-def get_tcp_socket(host, port):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    if s:
-        try:
-            server_address = (host, port)
-            s.connect(server_address)
-        except Exception as e:
-            print(e)
-            raise e
-    return s
-
-
-def get_udp_socket(host, port):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # Bind the socket to a port
-    server_address = (host, port)
-    if sock:
-        try:
-            sock.bind(server_address)
-        except Exception as e:
-            print(e)
-            raise e
-    return sock
 
 
 def get_ip_address():
@@ -151,12 +127,35 @@ def parse_chatter_message(data):
     print(data)
 
 
-# main method
-if __name__ == "__main__":
+def main():
+    main()
     parser = argparse.ArgumentParser()
     parser.add_argument("screen_name", help="Your screen name")
     parser.add_argument("host_name", help="The server's hostname")
     parser.add_argument("tcp_port", help="The server's welcome tcp port",type=int)
+
+    # parse the arguments
+    args = parser.parse_args()
+    # remove whitespace from screen name
+    screenName = args.screen_name.strip()
+    hostName = args.host_name
+    tcpPort = args.tcp_port
+
+    chatter = Chatter(screenName,hostName,tcpPort)
+    chatter.init_connection()
+    receive = ReceiveThread(chatter)
+    send = SendThread()
+
+    receive.start()
+    send.start()
+
+# main method
+if __name__ == "__main__":
+    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("screen_name", help="Your screen name")
+    parser.add_argument("host_name", help="The server's hostname")
+    parser.add_argument("tcp_port", help="The server's welcome tcp port", type=int)
 
     # parse the arguments
     args = parser.parse_args()
