@@ -15,6 +15,25 @@ class Chatter:
         self.peers = {}
         self.BUFFER_SIZE = buffer_size
 
+    # send a message to all chatters
+    def send_to_all(self, msg):
+        # Create a UDP socket
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # encode the data
+        data = msg.encode()
+        chatters = self.peers
+        try:
+            for name in chatters:
+                ip = chatters[name][0]
+                port = chatters[name][1]
+                server_address = (ip, port)
+                sock.sendto(data,server_address)
+        except Exception as e:
+            print("Unable to send udp messages")
+            print(e)
+        finally:
+            sock.close()
+
     def get_tcp_socket(self):
         # Create a TCP/IP socket
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -100,9 +119,6 @@ class Chatter:
             except Exception as e:
                 print(e)
                 raise(e)
-            #TODO: Check if we need to close this tcp_socket
-            finally:
-                tcp_socket.close()
         else:
             tcp_socket.close()
         return udp_socket
