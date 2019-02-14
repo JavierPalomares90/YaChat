@@ -17,9 +17,22 @@ class Chatter:
 
     def __del__(self):
         if self.tcp_socket:
+            self.send_exit_msg()
             self.tcp_socket.close()
         if self.udp_socket:
             self.udp_socket.close()
+
+    def get_exit_msg(self):
+        msg = "EXIT\n"
+
+    def send_exit_msg(self):
+        tcp_socket = self.tcp_socket
+        msg = self.get_exit_msg()
+        data = msg.encode()
+        try:
+            tcp_socket.send(data)
+        except Exception as e:
+            print(e)
 
     def get_tcp_socket(self):
         # Create a TCP/IP socket
