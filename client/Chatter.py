@@ -149,6 +149,7 @@ class Chatter:
 
     def parse_msg(self,msg):
         self.print_msg(msg[5:])
+        self.print_msg(self.screen_name+":")
 
     def get_input(self):
         msg = input(self.screen_name + ": ")
