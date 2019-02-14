@@ -18,117 +18,6 @@ BUFFER_SIZE = 2048
 chatters = None
 
 
-def get_ip_address():
-    # TODO: Fix implemenation
-    return "127.0.1.1"
-
-
-def get_helo_msg(screen_name, udp_port):
-    msg = "HELO "
-    msg += screen_name
-    msg += " "
-    ip_address = get_ip_address()
-    msg += ip_address
-    msg += " "
-    msg += str(udp_port)
-    msg +="\n"
-    return msg
-
-
-def populate_chatroom(msg):
-    # Trim the "ACPT " form the message
-    msg = msg[5:]
-    # Time the newline
-    msg.replace('\n', '')
-    # split the string on ":"
-    records = msg.split(':')
-    chatters = {}
-    for i in range(len(records)):
-        # split the records by whitespace
-        values = records[i].split(' ')
-        name = values[0]
-        ip = values[1]
-        port = values[2]
-        chatters[name] = [ip, port]
-
-
-def parse_server_response(msg):
-    # the server accepted us
-    if(msg.find("ACPT ") != -1):
-        populate_chatroom(msg)
-    # the server rejected us
-    elif(msg.find("RJCT ") != -1):
-        raise Exception("Client is rejected. Username already exists in chatroom")
-    else:
-        raise Exception("Error: Wrong format for response")
-
-
-# Initialize the connection with the server
-# Init a udp socket to listen for messages
-def init_connection(screen_name, host_name, tcp_port):
-    # create a tcp socket to connect to the server
-    tcp_socket = get_tcp_socket(host_name, tcp_port)
-    if not tcp_socket:
-        raise Exception("Unable to initialize tcp connection with server at {}:{}".format(host_name,tcp_port))
-    # create a udp socket to listen for messages.
-    # Pass in 0 as the port to let the OS pick the port
-    udp_socket = get_udp_socket(host_name, 0)
-    if not udp_socket:
-        raise Exception("Unable to initialize udp connection with server at {}".format(host_name))
-
-    # Get the HELO msg to send to the server
-    helo_msg = get_helo_msg(screen_name, udp_socket.getsockname()[1])
-    if helo_msg:
-        try:
-            tcp_socket.send(helo_msg.encode())
-            # To fix getting partial response from the server.
-            msgAdd = ' '
-            while msgAdd[-1] != '\n':
-                msg = tcp_socket.recv(BUFFER_SIZE)
-                msg = msg.decode("utf-8")
-                msgAdd += msg
-            msg_from_server = msgAdd.strip()
-            #print("msg_from_server =", msg_from_server)
-            parse_server_response(msg_from_server)
-        except Exception as e:
-            print(e)
-            raise(e)
-        finally:
-            tcp_socket.close()
-    else:
-        tcp_socket.close()
-    return udp_socket
-
-
-# send a message to all chatters
-def send_to_all(msg):
-    # Create a UDP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # encode the data
-    data = msg.encode()
-    try:
-        for name in chatters:
-            ip = chatters[name][0]
-            port = chatters[name][1]
-            server_address = (ip, port)
-            sock.sendto(data,server_address)
-    except Exception as e:
-        print("Unable to send udp messages")
-        print(e)
-    finally:
-        sock.close()
-
-
-# waits for the user to input something
-def wait_for_user(screen_name):
-    msg = input(screen_name + ":")
-    send_to_all("MESG " + screen_name + ":" +msg + "\n")
-
-def parse_chatter_message(data):
-    # TODO: Complete implementation
-    print(data)
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("screen_name", help="Your screen name")
@@ -142,15 +31,14 @@ def main():
     hostName = args.host_name
     tcpPort = args.tcp_port
 
-    bufferSize = 2048
-
-    chatter = Chatter(screenName,hostName,tcpPort,bufferSize)
+    chatter = Chatter(screenName, hostName, tcpPort, BUFFER_SIZE)
     chatter.init_connection()
-    receive = ReceiveThread(chatter,bufferSize)
+    receive = ReceiveThread(chatter, BUFFER_SIZE)
     send = SendThread(chatter)
 
     receive.start()
     send.start()
+
 
 # main method
 if __name__ == "__main__":
