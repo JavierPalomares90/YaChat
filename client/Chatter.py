@@ -1,10 +1,10 @@
 ## Chatter class
 
 import socket
-
+import sys
+import threading
 
 class Chatter:
-
 
     def __init__(self, screen_name, host_name, tcp_port,buffer_size):
         self.screen_name = screen_name
@@ -14,16 +14,24 @@ class Chatter:
         self.udp_socket, self.udp_port = self.get_udp_socket()
         self.peers = {}
         self.BUFFER_SIZE = buffer_size
+        self.lock = threading.Lock()
+
+    def print_msg(self,msg):
+        self.lock.acquire()
+        sys.stdout.write("\r\033[K")  # Clear to the end of line
+        sys.stdout.write('\r' + msg + '\n')
+        sys.stdout.flush()
+        self.lock.release()
 
     def __del__(self):
         if self.tcp_socket:
-            self.send_exit_msg()
             self.tcp_socket.close()
         if self.udp_socket:
             self.udp_socket.close()
 
     def get_exit_msg(self):
         msg = "EXIT\n"
+        return msg
 
     def send_exit_msg(self):
         tcp_socket = self.tcp_socket
@@ -76,7 +84,7 @@ class Chatter:
             name, ip, port = record.split(' ')
             self.peers[name] = (ip, int(port))
             if name != self.screen_name:
-                print("{} is in the chatroom".format(name))
+                self.print_msg("{} is in the chatroom".format(name))
 
     def parse_server_response_helo(self, msg):
         # the server accepted us
@@ -95,19 +103,19 @@ class Chatter:
             name, ip, port = record.split(' ')
             self.peers[name] = (ip, int(port))
             if name != self.screen_name:
-                print("{} is in the chatroom".format(name))
+                self.print_msg("{} is in the chatroom".format(name))
 
     def parse_server_join(self, msg):
         msg = msg[5:].replace('\n', '')
         name, ip, port = msg.split(' ')
         if name == self.screen_name:
-            print("{} accepted to the chatroom".format(name))
+            self.print_msg("{} accepted to the chatroom".format(name))
         if name not in self.peers:
             self.peers[name] = (ip, int(port))
 
     def parse_server_exit(self, msg):
         name = msg[5:].replace('\n', '')
-        print("{} has left the chatroom".format(name))
+        self.print_msg("{} has left the chatroom".format(name))
         self.peers.pop(name, None)
 
     def init_connection(self):
@@ -135,15 +143,12 @@ class Chatter:
                 msg_from_server = msgAdd.strip()
                 self.parse_server_response_helo(msg_from_server)
             except Exception as e:
-                print(e)
                 raise(e)
         else:
             tcp_socket.close()
 
-    @staticmethod
-    def parse_msg(msg):
-        #TODO: Check format of MSG. May need to get chatter's name
-        print(msg[5:])
+    def parse_msg(self,msg):
+        self.print_msg(msg[5:])
 
     def get_input(self):
         msg = input(self.screen_name + ": ")
@@ -161,8 +166,7 @@ class Chatter:
                 server_address = self.peers[name]
                 sock.sendto(data, server_address)
         except Exception as e:
-            print("Unable to send message")
-            print(e)
+            self.print_msg("Unable to send message {}".format(msg))
         finally:
             sock.close()
 

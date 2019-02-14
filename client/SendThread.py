@@ -10,6 +10,13 @@ class SendThread(threading.Thread):
 
     def run(self):
         while True:
-            msg = self.chatter.get_input()
-            self.chatter.send_to_all(msg)
+            try:
+                msg = self.chatter.get_input()
+                self.chatter.send_to_all(msg)
+            except KeyboardInterrupt:
+                # send the exit message if the user
+                # hits control c-d
+                self.chatter.send_exit_msg()
+            except:
+                raise
 
