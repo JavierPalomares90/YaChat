@@ -42,7 +42,8 @@ class Chatter:
     def get_ip_address(self):
         # TODO: Fix this
         # socket.gethostbyname(udp_socket.gethostname())
-        return "127.0.1.1"
+        ip_address = socket.gethostbyname(self.host_name)
+        return ip_address
 
     def get_msg_helo(self):
         ip_address = self.get_ip_address()
@@ -126,8 +127,8 @@ class Chatter:
         else:
             tcp_socket.close()
 
-    #@staticmethod
-    def parse__msg(msg):
+    @staticmethod
+    def parse_msg(msg):
         #TODO: Check format of MSG. May need to get chatter's name
         print(msg[5:])
 
