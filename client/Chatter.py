@@ -21,25 +21,6 @@ class Chatter:
         if self.udp_socket:
             self.udp_socket.close()
 
-    # send a message to all chatters
-    def send_to_all(self, msg):
-        # Create a UDP socket
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        # encode the data
-        data = msg.encode()
-        chatters = self.peers
-        try:
-            for name in chatters:
-                ip = chatters[name][0]
-                port = chatters[name][1]
-                server_address = (ip, port)
-                sock.sendto(data,server_address)
-        except Exception as e:
-            print("Unable to send udp messages")
-            print(e)
-        finally:
-            sock.close()
-
     def get_tcp_socket(self):
         # Create a TCP/IP socket
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -156,10 +137,18 @@ class Chatter:
         # TODO how to let user Ctrl+C to exit the chat?
         # handle emit EXIT message and can keep use that terminal?
 
+    # send a message to all chatters
     def send_to_all(self, msg):
         # Create a UDP socket
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         data = msg.encode()
-        for name in self.peers:
-            server_address = self.peers[name]
-            sock.sendto(data, server_address)
+        try:
+            for name in self.peers:
+                server_address = self.peers[name]
+                sock.sendto(data, server_address)
+        except Exception as e:
+            print("Unable to send message")
+            print(e)
+        finally:
+            sock.close()
+
