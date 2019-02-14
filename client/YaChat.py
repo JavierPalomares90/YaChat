@@ -10,6 +10,8 @@ import time
 import sys
 
 from client.Chatter import Chatter
+from client.ReceiveThread import ReceiveThread
+from client.SendThread import SendThread
 
 BUFFER_SIZE = 2048
 # members in chatroom
@@ -128,7 +130,6 @@ def parse_chatter_message(data):
 
 
 def main():
-    main()
     parser = argparse.ArgumentParser()
     parser.add_argument("screen_name", help="Your screen name")
     parser.add_argument("host_name", help="The server's hostname")
@@ -141,10 +142,12 @@ def main():
     hostName = args.host_name
     tcpPort = args.tcp_port
 
-    chatter = Chatter(screenName,hostName,tcpPort)
+    bufferSize = 2048
+
+    chatter = Chatter(screenName,hostName,tcpPort,bufferSize)
     chatter.init_connection()
-    receive = ReceiveThread(chatter)
-    send = SendThread()
+    receive = ReceiveThread(chatter,bufferSize)
+    send = SendThread(chatter)
 
     receive.start()
     send.start()
@@ -152,31 +155,6 @@ def main():
 # main method
 if __name__ == "__main__":
     main()
-    parser = argparse.ArgumentParser()
-    parser.add_argument("screen_name", help="Your screen name")
-    parser.add_argument("host_name", help="The server's hostname")
-    parser.add_argument("tcp_port", help="The server's welcome tcp port", type=int)
-
-    # parse the arguments
-    args = parser.parse_args()
-    # remove whitespace from screen name
-    screenName = args.screen_name.strip()
-    hostName = args.host_name
-    tcpPort = args.tcp_port
-
-    # Initialize the connection
-    udpSocket = init_connection(screenName,hostName,tcpPort)
-    # spin off a thread to listen for messages the user inputs
-    wait_for_user(screenName)
-    # listen for messages on the udp port
-    while(True):
-        try:
-            data, address = udpSocket.recv(BUFFER_SIZE)
-        except Exception as e:
-            print(e)
-        if data:
-            parse_chatter_message(data)
-
 
 
 

@@ -15,6 +15,12 @@ class Chatter:
         self.peers = {}
         self.BUFFER_SIZE = buffer_size
 
+    def __del__(self):
+        if self.tcp_socket:
+            self.tcp_socket.close()
+        if self.udp_socket:
+            self.udp_socket.close()
+
     # send a message to all chatters
     def send_to_all(self, msg):
         # Create a UDP socket
@@ -52,9 +58,13 @@ class Chatter:
         # To find what port the OS picked, call getsockname()
         return sock, sock.getsockname()[1]
 
+    def get_ip_address(self):
+        # TODO: Fix this
+        # socket.gethostbyname(udp_socket.gethostname())
+        return "127.0.1.1"
+
     def get_msg_helo(self):
-        udp_socket = self.udp_socket
-        ip_address = udp_socket.gethostbyname(udp_socket.gethostname())
+        ip_address = self.get_ip_address()
         msg = "HELO "
         msg += self.screen_name
         msg += " "
@@ -73,7 +83,7 @@ class Chatter:
             if name != self.screen_name:
                 print("{} is in the chatroom".format(name))
 
-    def parse_server_response(self, msg):
+    def parse_server_response_helo(self, msg):
         # the server accepted us
         if msg.find("ACPT ") != -1:
             self.parse_acpt_response(msg)
@@ -134,7 +144,6 @@ class Chatter:
                 raise(e)
         else:
             tcp_socket.close()
-        return udp_socket
 
     #@staticmethod
     def parse__msg(msg):
