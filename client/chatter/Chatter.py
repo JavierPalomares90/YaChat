@@ -25,7 +25,6 @@ class Chatter:
         sys.stdout.flush()
         self.lock.release()
 
-
     def print_msg(self,msg):
         self.lock.acquire()
         sys.stdout.write("\r\033[K")  # Clear to the end of line
@@ -51,14 +50,19 @@ class Chatter:
             tcp_socket.send(data)
         except Exception as e:
             print(e)
+        finally:
+            # close the sockets
+            tcp_socket.close()
+            self.udp_socket.close()
+            exit()
 
     def get_tcp_socket(self):
         # Create a TCP/IP socket
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Bind the socket to the port
         server_address = (self.host_name, self.tcp_port)
-        sock.connect(server_address)
-        return sock
+        tcp_sock.connect(server_address)
+        return tcp_sock
 
     def get_udp_socket(self, port=0):
         # port=0 tells the OS to pick a port
@@ -74,14 +78,13 @@ class Chatter:
         return self.ip_address
 
     def get_msg_helo(self):
-        ip_address = self.get_ip_address()
         msg = "HELO "
         msg += self.screen_name
         msg += " "
         msg += self.get_ip_address()
         msg += " "
         msg += str(self.udp_port)
-        msg +="\n"
+        msg += "\n"
         return msg
 
     def parse_acpt_response(self, msg):
@@ -152,8 +155,6 @@ class Chatter:
     def get_input(self):
         msg = input(self.screen_name + ": ")
         return "MESG " + self.screen_name + ": " + msg + "\n"
-        # TODO how to let user Ctrl+C to exit the chat?
-        # handle emit EXIT message and can keep use that terminal?
 
     # send a message to all chatters
     def send_to_all(self, msg):
