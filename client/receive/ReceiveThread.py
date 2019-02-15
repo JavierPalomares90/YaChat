@@ -11,7 +11,7 @@ class ReceiveThread(threading.Thread):
         self.BUFFER_SIZE = bufferSize
 
     def run(self):
-        while True:
+        while self.chatter.isEnabled():
             msg, address = self.chatter.udp_socket.recvfrom(self.BUFFER_SIZE)
             msg = msg.decode("utf-8")
             if msg.startswith("MESG"):
@@ -22,4 +22,5 @@ class ReceiveThread(threading.Thread):
                 self.chatter.parse_server_exit(msg)
             else:
                 raise Exception("Unknown message: {}".format(msg))
+        exit()
 

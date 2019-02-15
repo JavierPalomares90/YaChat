@@ -17,6 +17,20 @@ class Chatter:
         self.peers = {}
         self.BUFFER_SIZE = buffer_size
         self.lock = threading.Lock()
+        self.threadLock = threading.Lock()
+        self.enabled = True
+
+    def enable(self,flag):
+        self.threadLock.acquire()
+        self.enabled = flag
+        self.threadLock.release()
+
+    def isEnabled(self):
+        val = False
+        self.threadLock.acquire()
+        val = self.enabled
+        self.threadLock.release()
+        return val
 
     def print_prompt(self):
         self.lock.acquire()
@@ -49,8 +63,10 @@ class Chatter:
         try:
             tcp_socket.send(data)
         except Exception as e:
-            print(e)
+            self.print_msg(e)
         finally:
+            # disable the chatter
+            self.enable(False)
             # close the sockets
             tcp_socket.close()
             self.udp_socket.close()
@@ -110,7 +126,9 @@ class Chatter:
         msg = msg[5:].replace('\n', '')
         name, ip, port = msg.split(' ')
         if name == self.screen_name:
+            self.print_msg("My Port is : {}".format(self.udp_port))
             self.print_msg("{} accepted to the chatroom".format(name))
+            self.print_prompt()
         elif name not in self.peers:
             self.peers[name] = (ip, int(port))
 

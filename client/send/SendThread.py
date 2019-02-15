@@ -13,7 +13,7 @@ class SendThread(threading.Thread):
         self._stop_event.set()
 
     def run(self):
-        while True:
+        while self.chatter.isEnabled():
             try:
                 msg = self.chatter.get_input()
                 self.chatter.send_to_all(msg)
@@ -22,6 +22,7 @@ class SendThread(threading.Thread):
                 # hits control c-d
                 self.chatter.print_msg("caught keyboard exception")
                 self.chatter.send_exit_msg()
+        exit()
 
 
 
