@@ -5,13 +5,12 @@
 #--------------------------------#
 
 import argparse
-import socket
-import time
 import sys
-
-from client.Chatter import Chatter
-from client.ReceiveThread import ReceiveThread
-from client.SendThread import SendThread
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__),  ".."))
+from client.chatter.Chatter import Chatter
+from client.receive.ReceiveThread import ReceiveThread
+from client.send.SendThread import SendThread
 
 BUFFER_SIZE = 2048
 # members in chatroom
