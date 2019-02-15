@@ -13,6 +13,7 @@ class Chatter:
         self.tcp_socket = self.get_tcp_socket()
         self.client_hostname = socket.gethostname()
         self.ip_address = socket.gethostbyname(self.client_hostname)
+
         self.udp_socket, self.udp_port = self.get_udp_socket()
         self.peers = {}
         self.BUFFER_SIZE = buffer_size
@@ -85,7 +86,7 @@ class Chatter:
         # Create a UDP/IP socket -> DGRAM
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Bind the socket to a port of OS's choosing
-        server_address = (self.client_hostname, port)
+        server_address = (self.ip_address, port)
         sock.bind(server_address)
         # To find what port the OS picked, call getsockname()
         return sock, sock.getsockname()[1]
