@@ -18,6 +18,14 @@ class Chatter:
         self.BUFFER_SIZE = buffer_size
         self.lock = threading.Lock()
 
+    def print_prompt(self):
+        self.lock.acquire()
+        sys.stdout.write("\r\033[K")  # Clear to the end of line
+        sys.stdout.write('\r' + self.screen_name+ ':')
+        sys.stdout.flush()
+        self.lock.release()
+
+
     def print_msg(self,msg):
         self.lock.acquire()
         sys.stdout.write("\r\033[K")  # Clear to the end of line
@@ -139,7 +147,7 @@ class Chatter:
 
     def parse_msg(self,msg):
         self.print_msg(msg[5:])
-        self.print_msg(self.screen_name+":")
+        self.print_prompt()
 
     def get_input(self):
         msg = input(self.screen_name + ": ")
