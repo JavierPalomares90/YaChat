@@ -20,7 +20,6 @@ class SendThread(threading.Thread):
             except (KeyboardInterrupt, EOFError):
                 # send the exit message if the user
                 # hits control c-d
-                self.chatter.print_msg("caught keyboard exception")
                 self.chatter.send_exit_msg()
         exit()
 

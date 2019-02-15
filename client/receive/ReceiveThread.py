@@ -11,16 +11,18 @@ class ReceiveThread(threading.Thread):
         self.BUFFER_SIZE = bufferSize
 
     def run(self):
-        while self.chatter.isEnabled():
+        while True:
             msg, address = self.chatter.udp_socket.recvfrom(self.BUFFER_SIZE)
-            msg = msg.decode("utf-8")
-            if msg.startswith("MESG"):
-                self.chatter.parse_msg(msg)
-            elif msg.startswith("JOIN"):
-                self.chatter.parse_server_join(msg)
-            elif msg.startswith("EXIT"):
-                self.chatter.parse_server_exit(msg)
+            if self.chatter.isEnabled():
+                msg = msg.decode("utf-8")
+                if msg.startswith("MESG"):
+                    self.chatter.parse_msg(msg)
+                elif msg.startswith("JOIN"):
+                    self.chatter.parse_server_join(msg)
+                elif msg.startswith("EXIT"):
+                    self.chatter.parse_server_exit(msg)
+                else:
+                    raise Exception("Unknown message: {}".format(msg))
             else:
-                raise Exception("Unknown message: {}".format(msg))
-        exit()
+                exit()
 
