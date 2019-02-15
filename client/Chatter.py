@@ -11,6 +11,8 @@ class Chatter:
         self.host_name = host_name
         self.tcp_port = tcp_port
         self.tcp_socket = self.get_tcp_socket()
+        self.client_hostname = socket.gethostname()
+        self.ip_address = socket.gethostbyname(self.client_hostname)
         self.udp_socket, self.udp_port = self.get_udp_socket()
         self.peers = {}
         self.BUFFER_SIZE = buffer_size
@@ -55,23 +57,20 @@ class Chatter:
         # Create a UDP/IP socket -> DGRAM
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Bind the socket to a port of OS's choosing
-        server_address = (self.host_name, port)
+        server_address = (self.client_hostname, port)
         sock.bind(server_address)
         # To find what port the OS picked, call getsockname()
         return sock, sock.getsockname()[1]
 
     def get_ip_address(self):
-        # TODO: Fix this
-        # socket.gethostbyname(udp_socket.gethostname())
-        ip_address = socket.gethostbyname(self.host_name)
-        return ip_address
+        return self.ip_address
 
     def get_msg_helo(self):
         ip_address = self.get_ip_address()
         msg = "HELO "
         msg += self.screen_name
         msg += " "
-        msg += ip_address
+        msg += self.get_ip_address()
         msg += " "
         msg += str(self.udp_port)
         msg +="\n"
@@ -82,9 +81,9 @@ class Chatter:
         records = msg.split(':')
         for record in records:
             name, ip, port = record.split(' ')
-            self.peers[name] = (ip, int(port))
             if name != self.screen_name:
                 self.print_msg("{} is in the chatroom".format(name))
+                self.peers[name] = (ip, int(port))
 
     def parse_server_response_helo(self, msg):
         # the server accepted us
@@ -96,21 +95,12 @@ class Chatter:
         else:
             raise Exception("Error: Wrong format for response")
 
-    def parse_server_acpt(self, msg):
-        msg = msg[5:].replace('\n', '')
-        records = msg.split(':')
-        for record in records:
-            name, ip, port = record.split(' ')
-            self.peers[name] = (ip, int(port))
-            if name != self.screen_name:
-                self.print_msg("{} is in the chatroom".format(name))
-
     def parse_server_join(self, msg):
         msg = msg[5:].replace('\n', '')
         name, ip, port = msg.split(' ')
         if name == self.screen_name:
             self.print_msg("{} accepted to the chatroom".format(name))
-        if name not in self.peers:
+        elif name not in self.peers:
             self.peers[name] = (ip, int(port))
 
     def parse_server_exit(self, msg):
@@ -164,8 +154,9 @@ class Chatter:
         data = msg.encode()
         try:
             for name in self.peers:
-                server_address = self.peers[name]
-                sock.sendto(data, server_address)
+                server_address = self.peers.get(name,None)
+                if server_address:
+                    sock.sendto(data, server_address)
         except Exception as e:
             self.print_msg("Unable to send message {}".format(msg))
         finally:
