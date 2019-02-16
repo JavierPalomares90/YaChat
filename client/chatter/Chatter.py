@@ -94,7 +94,7 @@ class Chatter:
     def get_ip_address(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
-        self.ip_address = s.getsockname()[0]
+        ip_address = s.getsockname()[0]
         s.close()
         return self.ip_address
 
