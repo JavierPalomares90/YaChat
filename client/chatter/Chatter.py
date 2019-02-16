@@ -134,11 +134,11 @@ class Chatter:
     def parse_server_join(self, msg):
         msg = msg[5:].replace('\n', '')
         name, ip, port = msg.split(' ')
-        if name not in self.peers:
-            self.print_msg("{} has joined the chatroom".format(name))
         if name == self.screen_name:
             self.print_prompt()
         else:
+            if name not in self.peers:
+                self.print_msg("{} has joined the chatroom".format(name))
             self.peers[name] = (ip, int(port))
 
     def parse_server_exit(self, msg):
