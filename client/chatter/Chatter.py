@@ -120,7 +120,6 @@ class Chatter:
                 self.print_msg("My Port is : {}".format(self.udp_port))
                 self.print_msg("{} accepted to the chatroom".format(self.screen_name))
 
-
     def parse_server_response_helo(self, msg):
         # the server accepted us
         if msg.find("ACPT ") != -1:
@@ -134,12 +133,9 @@ class Chatter:
     def parse_server_join(self, msg):
         msg = msg[5:].replace('\n', '')
         name, ip, port = msg.split(' ')
-        if name == self.screen_name:
-            self.print_prompt()
-        else:
-            if name not in self.peers:
-                self.print_msg("{} has joined the chatroom".format(name))
-            self.peers[name] = (ip, int(port))
+        if name not in self.peers and name != self.screen_name:
+            self.print_msg("{} has joined the chatroom".format(name))
+        self.peers[name] = (ip, int(port))
 
     def parse_server_exit(self, msg):
         name = msg[5:].replace('\n', '')
@@ -177,10 +173,9 @@ class Chatter:
 
     def parse_msg(self,msg):
         self.print_msg(msg[5:])
-        self.print_prompt()
 
     def get_input(self):
-        msg = input(self.screen_name + ": ")
+        msg = input()
         return "MESG " + self.screen_name + ": " + msg + "\n"
 
     # send a message to all chatters

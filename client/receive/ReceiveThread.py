@@ -23,6 +23,7 @@ class ReceiveThread(threading.Thread):
                     self.chatter.parse_server_exit(msg)
                 else:
                     raise Exception("Unknown message: {}".format(msg))
+                self.chatter.print_prompt()
             else:
                 exit()
 
