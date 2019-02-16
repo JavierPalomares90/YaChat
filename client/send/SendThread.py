@@ -17,6 +17,7 @@ class SendThread(threading.Thread):
             try:
                 msg = self.chatter.get_input()
                 self.chatter.send_to_all(msg)
+                self.chatter.print_prompt()
             except (KeyboardInterrupt, EOFError):
                 # send the exit message if the user
                 # hits control c-d
