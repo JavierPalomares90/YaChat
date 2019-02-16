@@ -136,7 +136,7 @@ class Chatter:
         name, ip, port = msg.split(' ')
         if name == self.screen_name:
             self.print_prompt()
-        elif name not in self.peers:
+        else:
             self.peers[name] = (ip, int(port))
 
     def parse_server_exit(self, msg):
