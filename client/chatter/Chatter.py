@@ -12,7 +12,7 @@ class Chatter:
         self.tcp_port = tcp_port
         self.tcp_socket = self.get_tcp_socket()
         self.client_hostname = socket.gethostname()
-        self.ip_address = socket.gethostbyname(self.client_hostname)
+        self.ip_address = self.get_ip_address()
 
         self.udp_socket, self.udp_port = self.get_udp_socket()
         self.peers = {}
@@ -92,6 +92,9 @@ class Chatter:
         return sock, sock.getsockname()[1]
 
     def get_ip_address(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_address = s.getsockname()[0]
         return self.ip_address
 
     def get_msg_helo(self):
