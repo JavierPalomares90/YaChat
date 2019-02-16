@@ -27,7 +27,7 @@ class Chatter:
         self.threadLock.release()
 
     def isEnabled(self):
-        val = False
+        val = True
         self.threadLock.acquire()
         val = self.enabled
         self.threadLock.release()
@@ -112,6 +112,10 @@ class Chatter:
             if name != self.screen_name:
                 self.print_msg("{} is in the chatroom".format(name))
                 self.peers[name] = (ip, int(port))
+            else:
+                self.print_msg("My Port is : {}".format(self.udp_port))
+                self.print_msg("{} accepted to the chatroom".format(self.screen_name))
+
 
     def parse_server_response_helo(self, msg):
         # the server accepted us
@@ -127,8 +131,6 @@ class Chatter:
         msg = msg[5:].replace('\n', '')
         name, ip, port = msg.split(' ')
         if name == self.screen_name:
-            self.print_msg("My Port is : {}".format(self.udp_port))
-            self.print_msg("{} accepted to the chatroom".format(name))
             self.print_prompt()
         elif name not in self.peers:
             self.peers[name] = (ip, int(port))
