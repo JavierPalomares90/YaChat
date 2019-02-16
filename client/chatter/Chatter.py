@@ -86,7 +86,7 @@ class Chatter:
         # Create a UDP/IP socket -> DGRAM
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Bind the socket to a port of OS's choosing
-        server_address = (self.client_hostname, port)
+        server_address = (self.ip_address, port)
         sock.bind(server_address)
         # To find what port the OS picked, call getsockname()
         return sock, sock.getsockname()[1]
