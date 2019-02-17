@@ -26,7 +26,9 @@ class ReceiveThread(threading.Thread):
                         raise Exception("Unknown message: {}".format(msg))
                     self.chatter.print_prompt()
                 else:
-                    exit()
+                    if self.chatter.isEnabled() == False:
+                        exit()
             except Exception as e:
-                exit()
+                if self.chatter.isEnabled() == False:
+                    exit()
 
