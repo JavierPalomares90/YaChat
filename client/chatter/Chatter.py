@@ -106,7 +106,6 @@ class Chatter:
             return ip_address
         except Exception as e:
             # Unable to get WLAN ip address. Try over loopback
-            self.print_msg("didn't get wlan ip32")
             ip_address = socket.gethostbyname(self.client_hostname)
             return ip_address
         return None
