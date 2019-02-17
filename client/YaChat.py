@@ -35,6 +35,8 @@ def main():
     receive = ReceiveThread(chatter, BUFFER_SIZE)
     send = SendThread(chatter)
 
+    receive.daemon = True
+    send.daemon = True
     receive.start()
     send.start()
 
