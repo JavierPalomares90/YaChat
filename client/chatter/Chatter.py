@@ -10,16 +10,19 @@ class Chatter:
         self.screen_name = screen_name
         self.host_name = host_name
         self.tcp_port = tcp_port
-        self.tcp_socket = self.get_tcp_socket()
-        self.client_hostname = socket.gethostname()
-        self.ip_address = self.get_ip_address()
-
-        self.udp_socket, self.udp_port = self.get_udp_socket()
+        self.tcp_socket = None
+        self.udp_socket = None
         self.peers = {}
         self.BUFFER_SIZE = buffer_size
         self.lock = threading.Lock()
         self.threadLock = threading.Lock()
         self.enabled = True
+
+        self.client_hostname = socket.gethostname()
+        self.tcp_socket = self.get_tcp_socket()
+        self.client_hostname = socket.gethostname()
+        self.ip_address = self.get_ip_address()
+        self.udp_socket, self.udp_port = self.get_udp_socket()
 
     def enable(self,flag):
         self.threadLock.acquire()
@@ -78,7 +81,10 @@ class Chatter:
         tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Bind the socket to the port
         server_address = (self.host_name, self.tcp_port)
-        tcp_sock.connect(server_address)
+        try:
+            tcp_sock.connect(server_address)
+        except:
+            raise Exception("Unable to initialize tcp connection to ",server_address)
         return tcp_sock
 
     def get_udp_socket(self, port=0):
@@ -93,10 +99,18 @@ class Chatter:
 
     def get_ip_address(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip_address = s.getsockname()[0]
-        s.close()
-        return ip_address
+        try:
+            s.connect(("8.8.8.8", 80))
+            ip_address = s.getsockname()[0]
+            s.close()
+            return ip_address
+        except Exception as e:
+            # Unable to get WLAN ip address. Try over loopback
+            self.print_msg("didn't get wlan ip32")
+            ip_address = socket.gethostbyname(self.client_hostname)
+            return ip_address
+        return None
+
 
     def get_msg_helo(self):
         msg = "HELO "
