@@ -24,7 +24,21 @@ class WelcomeSocket:
         self.tcp_socket.listen()
         conn, addr = self.tcp_socket.accept()
         with conn:
-            print("connected to:" + conn)
+            while True:
+                try:
+                    buf = ' '
+                    while buf[-1] != '\n':
+                        msg = conn.recv(self.buffer_size)
+                        msg = msg.decode("utf-8")
+                        buf += msg
+                    msg_from_client = buf.strip()
+                    return msg_from_client
+                except Exception as e:
+                    raise Warning("Unable to receive from: " + addr)
+
+    def parse_helo(self,data):
+        d = data
+
 
     def get_ip_address(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
