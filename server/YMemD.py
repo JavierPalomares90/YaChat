@@ -7,14 +7,14 @@
 import argparse
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__),  ".."))
-from server.welcome import WelcomeSocket
+#sys.path.append(os.path.join(os.path.dirname(__file__),  ".."))
+from server.welcome.WelcomeSocket import WelcomeSocket
 
 BUFFER_SIZE = 2048
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("welcome_port",type=int)
+    parser.add_argument("welcome_port", type=int)
 
     args = parser.parse_args()
     welcome_port = args.welcome_port

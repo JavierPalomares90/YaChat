@@ -9,6 +9,10 @@ Install the required modules using pip
 
 `pip install -r requirements.txt`
 
+## Running the server
+To run the YaChat server
+`python3 server.YMemD.py <welcome_port>`
+
 ## Running client
 To run the YaChat client
 

@@ -2,20 +2,21 @@
 import socket
 import sys
 
+
 class WelcomeSocket:
 
-    def __init__(self,port,buffer_size):
+    def __init__(self, port, buffer_size):
         self.buffer_size = buffer_size
         self.ip_address = self.get_ip_address()
         self.port = port
-        self.tcp_socket = self.get_tcp_socket(port)
+        self.tcp_socket = self.get_tcp_socket()
 
     def get_tcp_socket(self):
         s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         address = (self.ip_address,self.port)
         try:
             s.bind(address)
-        except:
+        except Exception as e:
             raise Exception("Unable to start welcome socket at port {}".format(self.tcp_port))
         return s
 
@@ -24,7 +25,6 @@ class WelcomeSocket:
         conn, addr = self.tcp_socket.accept()
         with conn:
             print("connected to:" + conn)
-
 
     def get_ip_address(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
