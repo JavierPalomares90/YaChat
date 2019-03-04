@@ -36,10 +36,6 @@ class WelcomeSocket:
                 except Exception as e:
                     raise Warning("Unable to receive from: " + addr)
 
-    def parse_helo(self,data):
-        d = data
-
-
     def get_ip_address(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
@@ -69,11 +65,6 @@ class WelcomeSocket:
             line = name + " " + ip + " " + port + ":"
             msg += line
         # replace the last colon with a new line
-
+        msg = msg[:-1] + '\n'
         msg.encode()
         self.tcp_socket.send(msg)
-
-
-        pass
-
-
