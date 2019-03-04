@@ -53,4 +53,27 @@ class WelcomeSocket:
             return ip_address
         return None
 
+    def send_reject_message(self, member):
+        name = member.name
+        msg = "RJCT " + name + "\n"
+        msg = msg.encode()
+        self.tcp_socket.send(msg)
+
+    def send_accept_message(self, members):
+
+        msg = "ACPT "
+        for member in members:
+            name = member.name
+            ip = member.ip
+            port = member.port
+            line = name + " " + ip + " " + port + ":"
+            msg += line
+        # replace the last colon with a new line
+
+        msg.encode()
+        self.tcp_socket.send(msg)
+
+
+        pass
+
 

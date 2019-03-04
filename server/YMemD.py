@@ -16,12 +16,9 @@ BUFFER_SIZE = 2048
 # dictionary to hold all of the members
 members = {}
 
-def accept_member(member):
-    name = member.name
-    namesInServer = members.keys()
-    if list(namesInServer).
 
-def parse_helo(data):
+
+def parse_msg(data):
     msg = data.split()
     if len(msg) != 4 or msg[0] != 'HELO':
         raise Warning("received message with incorrect format")
@@ -30,7 +27,7 @@ def parse_helo(data):
     ip = msg[2]
     port = msg[3]
     member = Member(name,ip,port)
-    accept_member(member)
+    return member
 
 
 def main():
@@ -41,8 +38,16 @@ def main():
     welcome_port = args.welcome_port
     # socket listening on the welcome port for new clients
     welcome_socket = WelcomeSocket(welcome_port,BUFFER_SIZE)
-    data = welcome_socket.listen()
-    parse_helo(data)
+    msg = welcome_socket.listen()
+    member = parse_msg(msg)
+    namesInServer = members.keys()
+    if member.name in namesInServer:
+        # the screen_name is already in use
+        welcome_socket.send_reject_message(member)
+    else:
+        # add the member to the list and send the accept message
+        members[member.name] = member
+        welcome_socket.send_accept_message(members)
 
 
 
