@@ -8,11 +8,10 @@ import argparse
 import sys
 import os
 
-from server.Server import Server
 
 sys.path.append(os.path.join(os.path.dirname(__file__),  ".."))
 from server.members.Member import Member
-from server.welcome.WelcomeSocket import WelcomeSocket
+from server.Server import Server
 
 BUFFER_SIZE = 2048
 # dictionary to hold all of the members
