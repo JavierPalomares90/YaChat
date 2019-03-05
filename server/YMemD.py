@@ -39,18 +39,7 @@ def main():
     args = parser.parse_args()
     welcome_port = args.welcome_port
     server = Server(welcome_port)
-    # socket listening on the welcome port for new clients
-    welcome_socket = WelcomeSocket(welcome_port,BUFFER_SIZE)
-    msg = welcome_socket.accept()
-    member = parse_msg(msg)
-    namesInServer = members.keys()
-    if member.name in namesInServer:
-        # the screen_name is already in use
-        welcome_socket.send_reject_message(member)
-    else:
-        # add the member to the list and send the accept message
-        members[member.name] = member
-        welcome_socket.send_accept_message(members)
+    server.start()
 
 
 
