@@ -26,6 +26,8 @@ class ClientThread(threading.Thread):
                         msg = conn.recv(self.buffer_size)
                         if not msg:
                             # the client terminated the connection
+                            # TODO: Check if this is the correct time to send exit
+                            self.send_exit_msg()
                             break;
                         msg = msg.decode("utf-8")
                         buf += msg
@@ -34,6 +36,7 @@ class ClientThread(threading.Thread):
                 except Exception as e:
                     raise Warning("Unable to receive from: " + self.buffer_size)
 
+    # parse the message from the client
     def parse_client_msg(self,msg_from_client):
         member = Server.parse_new_member(msg_from_client)
         members = self.get_members()
@@ -42,9 +45,32 @@ class ClientThread(threading.Thread):
             self.send_reject_message(member)
         else:
             self.add_member(member)
+            self.send_accept_message()
 
+    # there is already a user with the same name, reject this client
+    def send_reject_message(self,member):
+        name = member.name
+        msg = "RJCT " + name + "\n"
+        msg = msg.encode()
+        self.socket.send(msg)
 
+    # the client was accepted. send the accept message
+    def send_accept_message(self):
+        members = self.get_members()
+        msg = "ACPT "
+        for member in members:
+            name = member.name
+            ip = member.ip
+            port = member.port
+            line = name + " " + ip + " " + port + ":"
+            msg += line
+        # replace the last colon with a new line
+        msg = msg[:-1] + '\n'
+        msg = msg.encode()
+        self.socket.send(msg)
 
-    #TODO: Need to let the client thread
-
+    def send_exit_msg(self):
+        msg = "EXIT\n"
+        msg = msg.encode()
+        self.socket.send(msg)
 

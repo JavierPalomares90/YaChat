@@ -37,11 +37,6 @@ class WelcomeSocket:
             return ip_address
         return None
 
-    def send_reject_message(self, member):
-        name = member.name
-        msg = "RJCT " + name + "\n"
-        msg = msg.encode()
-        self.tcp_socket.send(msg)
 
     def send_accept_message(self, members):
         msg = "ACPT "
@@ -53,5 +48,5 @@ class WelcomeSocket:
             msg += line
         # replace the last colon with a new line
         msg = msg[:-1] + '\n'
-        msg.encode()
+        msg = msg.encode()
         self.tcp_socket.send(msg)
