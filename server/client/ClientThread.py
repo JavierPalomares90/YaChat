@@ -2,7 +2,6 @@
 
 import threading
 
-from server import Server
 from server.members.Member import Member
 
 
@@ -37,9 +36,13 @@ class ClientThread(threading.Thread):
                 except Exception as e:
                     raise Warning("Unable to receive from: " + self.client_ip)
 
-    # parse the message from the client
-    def parse_client_msg(self,msg_from_client):
-        member = self.parse_new_member(msg_from_client)
+
+    def parse_exit_message(self,msg):
+        #TODO: Figure out what to do here
+        m = msg;
+
+    def parse_helo_message(self,msg):
+        member = self.parse_new_member(msg)
         members = self.get_members()
         names = members.keys()
         if member.name in names:
@@ -48,6 +51,15 @@ class ClientThread(threading.Thread):
         else:
             self.add_member(member)
             self.send_accept_message()
+
+
+    # parse the message from the client
+    def parse_client_msg(self,msg_from_client):
+        # parse the exit message from the client
+        if(msg_from_client == "EXIT\n"):
+            self.parse_exit_message(msg_from_client)
+        else:
+            self.parse_helo_message(msg_from_client)
 
     # there is already a user with the same name, reject this client
     def send_reject_message(self,member):

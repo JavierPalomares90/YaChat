@@ -161,7 +161,7 @@ class Chatter:
         tcp_socket = self.tcp_socket
         if not tcp_socket:
             raise Exception("Unable to initialize tcp connection with server at {}:{}".format(self.host_name,self.tcp_port))
-        # create a udp socket to listen for messages.
+        # create a udp socket to client for messages.
         # Pass in 0 as the port to let the OS pick the port
         udp_socket = self.udp_socket
         if not udp_socket:

@@ -1,9 +1,8 @@
 import threading
 
-from server.listen.ClientThread import ClientThread
-from server.members.Member import Member
+from server.client.Broadcaster import Broadcaster
+from server.client.ClientThread import ClientThread
 from server.welcome.WelcomeSocket import WelcomeSocket
-
 
 class Server:
     BUFFER_SIZE = 2048
@@ -22,11 +21,39 @@ class Server:
         clientThread = ClientThread(conn, addr, Server.BUFFER_SIZE, self.get_members,self.add_member)
         clientThread.start()
 
+    def remove_member(self,name):
+        self.members_lock.acquire()
+        try:
+            self.members.pop(name)
+        except KeyError as e:
+            # the key did not exist in the dictionary
+            raise Warning("{} asked to leave, but was not part of members list".format(name))
+        self.members_lock.release()
+        self.broadcast_exit_msg(name)
+
+    def broadcast_msg(self,msg):
+        broadcaster = Broadcaster(msg,self.get_members())
+        broadcaster.start()
+
+    # inform all the chatters that someone new joined
+    def broadcast_join_msg(self, member):
+        name = member.name
+        ip = member.ip
+        port = member.port
+        msg = "JOIN " + name + " " + ip + " " + port + "\n"
+        self.broadcast_msg(msg)
+
+    # inform all the chatters that someone left
+    def broadcast_exit_msg(self, name):
+        msg = "EXIT " + name + "\n"
+        self.broadcast_msg(msg)
+
     def add_member(self,member):
         self.members_lock.acquire()
         name = member.name
         self.members[name] = member
         self.members_lock.release()
+        self.broadcast_join_msg(member)
 
     def get_members(self):
         self.members_lock.acquire()
