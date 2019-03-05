@@ -17,12 +17,12 @@ class ClientThread(threading.Thread):
         self.get_members = get_members
         self.add_member = add_member
         self.remove_member = remove_member
+        self.shutdown = False
 
     def run(self):
         conn = self.socket
         with conn:
-            conn.setblocking(False)
-            while True:
+            while self.shutdown == False:
                 try:
                     buf = ' '
                     while buf[-1] != '\n':
@@ -35,14 +35,14 @@ class ClientThread(threading.Thread):
                         msg = msg.decode("utf-8")
                         buf += msg
                     msg_from_client = buf.strip()
-                    self.parse_client_msg(msg_from_client)
                 except Exception as e:
                     raise Warning("Unable to receive from: " + self.client_ip)
+                    print(e)
+                self.parse_client_msg(msg_from_client)
 
 
     def parse_exit_message(self,msg):
-        #TODO: Figure out what to do here
-        m = msg;
+        self.send_exit_msg()
 
     def parse_helo_message(self,msg):
         try:
@@ -63,10 +63,16 @@ class ClientThread(threading.Thread):
     # parse the message from the client
     def parse_client_msg(self,msg_from_client):
         # parse the exit message from the client
-        if(msg_from_client == "EXIT\n"):
+        if len(msg_from_client) < 4:
+            raise Warning("received invalid message from client:{}".format(str(msg_from_client)))
+            return
+        if(msg_from_client == "EXIT"):
             self.parse_exit_message(msg_from_client)
-        else:
+        elif(msg_from_client[:4] == 'HELO'):
             self.parse_helo_message(msg_from_client)
+        else:
+            raise Warning("received invalid message from client:{}".format(str(msg_from_client)))
+            return
 
     # there is already a user with the same name, reject this client
     def send_reject_message(self,member):
@@ -90,9 +96,11 @@ class ClientThread(threading.Thread):
         self.socket.send(msg)
 
     def send_exit_msg(self):
-        if (self.client_name != None):
+        if self.client_name:
             # the client left the chat
             self.remove_member(self.client_name)
+            # have the thread stop itself
+            self.shutdown = True;
 
     def parse_new_member(self,data):
         msg = data.split()
@@ -100,6 +108,7 @@ class ClientThread(threading.Thread):
             raise Warning("received message with incorrect format")
             return
         name = msg[1]
+        self.client_name = name
         ip = msg[2]
         port = int(msg[3])
         member = Member(name,ip,port)

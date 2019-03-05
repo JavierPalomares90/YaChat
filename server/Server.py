@@ -13,6 +13,8 @@ class Server:
         # dictionary to hold all of the members
         self.members = {}
         self.members_lock = threading.Lock()
+        # hold all of the client threads
+        self.client_threads = []
         #TODO: should welcome socket be blocking = false
         self.welcome_socket = WelcomeSocket(welcome_port)
 
@@ -22,6 +24,7 @@ class Server:
                 conn,addr = self.welcome_socket.accept()
                 # get a new thread to connect with the client
                 clientThread = ClientThread(conn, addr, Server.BUFFER_SIZE, self.get_members,self.add_member,self.remove_member)
+                self.client_threads.append(clientThread)
                 clientThread.start()
             except Exception as e:
                 # Close the connections
