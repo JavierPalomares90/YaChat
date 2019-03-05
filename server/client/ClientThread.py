@@ -7,13 +7,16 @@ from server.members.Member import Member
 
 class ClientThread(threading.Thread):
 
-    def __init__(self,conn,addr,buffer_size,get_members,add_member):
+    def __init__(self,conn,addr,buffer_size,get_members,add_member,remove_member):
         super(ClientThread, self).__init__()
+        self.client_name = None
         self.socket = conn
-        self.client_ip = addr
+        self.client_ip = addr[0]
+        self.client_port = addr[1]
         self.buffer_size = buffer_size
         self.get_members = get_members
         self.add_member = add_member
+        self.remove_member = remove_member
 
     def run(self):
         conn = self.socket
@@ -42,7 +45,11 @@ class ClientThread(threading.Thread):
         m = msg;
 
     def parse_helo_message(self,msg):
-        member = self.parse_new_member(msg)
+        try:
+            member = self.parse_new_member(msg)
+        except Exception as e:
+            # unable to parse the member, reject him
+            self.socket.send("RJCT \n")
         members = self.get_members()
         names = members.keys()
         if member.name in names:
@@ -75,7 +82,7 @@ class ClientThread(threading.Thread):
         for name,member in members.items():
             ip = member.ip
             port = member.port
-            line = name + " " + ip + " " + port + ":"
+            line = name + " " + ip + " " + str(port) + ":"
             msg += line
         # replace the last colon with a new line
         msg = msg[:-1] + '\n'
@@ -83,9 +90,9 @@ class ClientThread(threading.Thread):
         self.socket.send(msg)
 
     def send_exit_msg(self):
-        msg = "EXIT\n"
-        msg = msg.encode()
-        self.socket.send(msg)
+        if (self.client_name != None):
+            # the client left the chat
+            self.remove_member(self.client_name)
 
     def parse_new_member(self,data):
         msg = data.split()
@@ -94,7 +101,7 @@ class ClientThread(threading.Thread):
             return
         name = msg[1]
         ip = msg[2]
-        port = msg[3]
+        port = int(msg[3])
         member = Member(name,ip,port)
         return member
 

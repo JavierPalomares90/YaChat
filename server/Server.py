@@ -4,6 +4,7 @@ from server.client.Broadcaster import Broadcaster
 from server.client.ClientThread import ClientThread
 from server.welcome.WelcomeSocket import WelcomeSocket
 
+
 class Server:
     BUFFER_SIZE = 2048
 
@@ -16,10 +17,17 @@ class Server:
         self.welcome_socket = WelcomeSocket(welcome_port)
 
     def start(self):
-        conn,addr = self.welcome_socket.accept()
-        # get a new thread to connect with the client
-        clientThread = ClientThread(conn, addr, Server.BUFFER_SIZE, self.get_members,self.add_member)
-        clientThread.start()
+        while True:
+            try:
+                conn,addr = self.welcome_socket.accept()
+                # get a new thread to connect with the client
+                clientThread = ClientThread(conn, addr, Server.BUFFER_SIZE, self.get_members,self.add_member,self.remove_member)
+                clientThread.start()
+            except Exception as e:
+                # Close the connections
+                conn.close()
+                self.welcome_socket.close()
+                exit(1)
 
     def remove_member(self,name):
         self.members_lock.acquire()
@@ -40,7 +48,7 @@ class Server:
         name = member.name
         ip = member.ip
         port = member.port
-        msg = "JOIN " + name + " " + ip + " " + port + "\n"
+        msg = "JOIN " + name + " " + ip + " " + str(port) + "\n"
         self.broadcast_msg(msg)
 
     # inform all the chatters that someone left
