@@ -16,7 +16,7 @@ class WelcomeSocket:
         try:
             s.bind(address)
         except Exception as e:
-            raise Exception("Unable to start welcome socket at port {}".format(self.tcp_port))
+            raise Exception("Unable to start welcome socket at port {}".format(self.port))
         return s
 
     def accept(self):

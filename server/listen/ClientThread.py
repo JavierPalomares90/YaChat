@@ -2,7 +2,8 @@
 
 import threading
 
-from server.Server import Server
+from server import Server
+from server.members.Member import Member
 
 
 class ClientThread(threading.Thread):
@@ -34,13 +35,14 @@ class ClientThread(threading.Thread):
                     msg_from_client = buf.strip()
                     self.parse_client_msg(msg_from_client)
                 except Exception as e:
-                    raise Warning("Unable to receive from: " + self.buffer_size)
+                    raise Warning("Unable to receive from: " + self.client_ip)
 
     # parse the message from the client
     def parse_client_msg(self,msg_from_client):
-        member = Server.parse_new_member(msg_from_client)
+        member = self.parse_new_member(msg_from_client)
         members = self.get_members()
-        if member.name in members:
+        names = members.keys()
+        if member.name in names:
             # the screen_name is already in use
             self.send_reject_message(member)
         else:
@@ -58,8 +60,7 @@ class ClientThread(threading.Thread):
     def send_accept_message(self):
         members = self.get_members()
         msg = "ACPT "
-        for member in members:
-            name = member.name
+        for name,member in members.items():
             ip = member.ip
             port = member.port
             line = name + " " + ip + " " + port + ":"
@@ -73,4 +74,15 @@ class ClientThread(threading.Thread):
         msg = "EXIT\n"
         msg = msg.encode()
         self.socket.send(msg)
+
+    def parse_new_member(self,data):
+        msg = data.split()
+        if len(msg) != 4 or msg[0] != 'HELO':
+            raise Warning("received message with incorrect format")
+            return
+        name = msg[1]
+        ip = msg[2]
+        port = msg[3]
+        member = Member(name,ip,port)
+        return member
 

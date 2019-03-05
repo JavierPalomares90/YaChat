@@ -7,22 +7,10 @@ from server.welcome.WelcomeSocket import WelcomeSocket
 
 class Server:
     BUFFER_SIZE = 2048
-    # dictionary to hold all of the members
-
-    @staticmethod
-    def parse_new_member(data):
-        msg = data.split()
-        if len(msg) != 4 or msg[0] != 'HELO':
-            raise Warning("received message with incorrect format")
-            return
-        name = msg[1]
-        ip = msg[2]
-        port = msg[3]
-        member = Member(name,ip,port)
-        return member
 
     def __init__(self,welcome_port):
         self.port = welcome_port
+        # dictionary to hold all of the members
         self.members = {}
         self.members_lock = threading.Lock()
         #TODO: should welcome socket be blocking = false
@@ -42,8 +30,8 @@ class Server:
 
     def get_members(self):
         self.members_lock.acquire()
-        names = self.members.keys()
+        members = self.members
         self.members_lock.release()
-        return names
+        return members
 
 
