@@ -20,7 +20,7 @@ class WelcomeSocket:
             raise Exception("Unable to start welcome socket at port {}".format(self.tcp_port))
         return s
 
-    def listen(self):
+    def accept(self):
         self.tcp_socket.listen()
         conn, addr = self.tcp_socket.accept()
         with conn:
@@ -56,7 +56,6 @@ class WelcomeSocket:
         self.tcp_socket.send(msg)
 
     def send_accept_message(self, members):
-
         msg = "ACPT "
         for member in members:
             name = member.name

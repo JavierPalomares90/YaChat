@@ -7,12 +7,14 @@
 import argparse
 import sys
 import os
+
+from server.Server import Server
+
 sys.path.append(os.path.join(os.path.dirname(__file__),  ".."))
 from server.members.Member import Member
 from server.welcome.WelcomeSocket import WelcomeSocket
 
 BUFFER_SIZE = 2048
-'HELO javier 192.168.86.229 57479'
 # dictionary to hold all of the members
 members = {}
 
@@ -36,9 +38,10 @@ def main():
 
     args = parser.parse_args()
     welcome_port = args.welcome_port
+    server = Server(welcome_port)
     # socket listening on the welcome port for new clients
     welcome_socket = WelcomeSocket(welcome_port,BUFFER_SIZE)
-    msg = welcome_socket.listen()
+    msg = welcome_socket.accept()
     member = parse_msg(msg)
     namesInServer = members.keys()
     if member.name in namesInServer:
