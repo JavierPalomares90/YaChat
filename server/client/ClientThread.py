@@ -39,6 +39,8 @@ class ClientThread(threading.Thread):
                     raise Warning("Unable to receive from: " + self.client_ip)
                     print(e)
                 self.parse_client_msg(msg_from_client)
+            # close the port
+            self.socket.close()
 
 
     def parse_exit_message(self,msg):
@@ -49,12 +51,16 @@ class ClientThread(threading.Thread):
             member = self.parse_new_member(msg)
         except Exception as e:
             # unable to parse the member, reject him
-            self.socket.send("RJCT \n")
+            name = ""
+            if self.client_name:
+                name = self.client_name
+            self.send_reject_message(name)
+            # unable to parse the member, reject him
         members = self.get_members()
         names = members.keys()
         if member.name in names:
             # the screen_name is already in use
-            self.send_reject_message(member)
+            self.send_reject_message(member.name)
         else:
             self.add_member(member)
             self.send_accept_message()
@@ -75,8 +81,7 @@ class ClientThread(threading.Thread):
             return
 
     # there is already a user with the same name, reject this client
-    def send_reject_message(self,member):
-        name = member.name
+    def send_reject_message(self,name):
         msg = "RJCT " + name + "\n"
         msg = msg.encode()
         self.socket.send(msg)
