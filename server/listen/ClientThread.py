@@ -2,7 +2,7 @@
 
 import threading
 
-from server import Server
+from server.Server import Server
 
 
 class ClientThread(threading.Thread):
