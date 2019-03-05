@@ -27,7 +27,7 @@ class ClientThread(threading.Thread):
                     buf = ' '
                     while buf[-1] != '\n':
                         msg = conn.recv(self.buffer_size)
-                        if not msg:
+                        if not msg or len(msg) == 0:
                             # the client terminated the connection
                             # TODO: Check if this is the correct time to send exit
                             self.send_exit_msg()
@@ -36,8 +36,7 @@ class ClientThread(threading.Thread):
                         buf += msg
                     msg_from_client = buf.strip()
                 except Exception as e:
-                    raise Warning("Unable to receive from: " + self.client_ip)
-                    print(e)
+                    self.send_exit_msg()
                 self.parse_client_msg(msg_from_client)
             # close the port
             self.socket.close()
