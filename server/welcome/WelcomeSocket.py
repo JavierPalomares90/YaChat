@@ -5,8 +5,7 @@ import sys
 
 class WelcomeSocket:
 
-    def __init__(self, port, buffer_size):
-        self.buffer_size = buffer_size
+    def __init__(self, port):
         self.ip_address = self.get_ip_address()
         self.port = port
         self.tcp_socket = self.get_tcp_socket()
@@ -23,18 +22,7 @@ class WelcomeSocket:
     def accept(self):
         self.tcp_socket.listen()
         conn, addr = self.tcp_socket.accept()
-        with conn:
-            while True:
-                try:
-                    buf = ' '
-                    while buf[-1] != '\n':
-                        msg = conn.recv(self.buffer_size)
-                        msg = msg.decode("utf-8")
-                        buf += msg
-                    msg_from_client = buf.strip()
-                    return msg_from_client
-                except Exception as e:
-                    raise Warning("Unable to receive from: " + addr)
+        return conn,addr
 
     def get_ip_address(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
