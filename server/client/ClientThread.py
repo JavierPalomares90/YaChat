@@ -29,7 +29,6 @@ class ClientThread(threading.Thread):
                         msg = conn.recv(self.buffer_size)
                         if not msg or len(msg) == 0:
                             # the client terminated the connection
-                            # TODO: Check if this is the correct time to send exit
                             self.send_exit_msg()
                             break;
                         msg = msg.decode("utf-8")
@@ -37,6 +36,9 @@ class ClientThread(threading.Thread):
                     msg_from_client = buf.strip()
                 except Exception as e:
                     self.send_exit_msg()
+                if not msg_from_client or len(msg_from_client) == 0:
+                    self.send_exit_msg()
+                    break;
                 self.parse_client_msg(msg_from_client)
             # close the port
             self.socket.close()
