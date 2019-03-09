@@ -29,7 +29,6 @@ class ClientThread(threading.Thread):
                         msg = conn.recv(self.buffer_size)
                         if not msg or len(msg) == 0:
                             # the client terminated the connection
-                            self.send_exit_msg()
                             break;
                         msg = msg.decode("utf-8")
                         buf += msg

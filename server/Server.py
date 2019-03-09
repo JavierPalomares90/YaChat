@@ -36,9 +36,8 @@ class Server:
         self.members_lock.acquire()
         try:
             self.members.pop(name)
-        except KeyError as e:
-            # the key did not exist in the dictionary
-            raise Warning("{} asked to leave, but was not part of members list".format(name))
+        except Exception as e:
+            pass
         self.members_lock.release()
         self.broadcast_exit_msg(name)
 
