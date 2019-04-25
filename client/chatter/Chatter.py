@@ -80,11 +80,14 @@ class Chatter:
         # Create a TCP/IP socket
         tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Bind the socket to the port
+        if self.host_name == 'localhost':
+            self.host_name = self.get_ip_address()
+
         server_address = (self.host_name, self.tcp_port)
         try:
             tcp_sock.connect(server_address)
-        except:
-            raise Exception("Unable to initialize tcp connection to ",server_address)
+        except Exception as e:
+            raise Exception("Unable to initialize tcp connection to {}".format(server_address,e))
         return tcp_sock
 
     def get_udp_socket(self, port=0):
